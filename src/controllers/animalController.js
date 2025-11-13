@@ -1,11 +1,11 @@
-const AnimalPerdidoEncontrado = require("../models/AnimalPerdidoEncontrado.js");
+const Animal = require("../models/Animal.js");
 
 // POST (Criar)
 const criarAnimal = async (req, res) => {
     try {
-        const novoAnimal = new AnimalPerdidoEncontrado(req.body);
+        const novoAnimal = new Animal(req.body);
         const animalSalvo = await novoAnimal.save();
-        res.status(201).json({ message: "Animal perdido/encontrado cadastrado com sucesso!", animal: animalSalvo });
+        res.status(201).json({ message: "Animal cadastrado com sucesso!", animal: animalSalvo });
     } catch (error) {
         res.status(400).json({ message: "Erro ao cadastrar animal", error: error.message });
     }
@@ -14,7 +14,7 @@ const criarAnimal = async (req, res) => {
 // GET (Listar Todos)
 const listarTodosAnimais = async (req, res) => {
     try {
-        const animais = await AnimalPerdidoEncontrado.find();
+        const animais = await Animal.find();
         res.status(200).json(animais);
     } catch (error) {
         res.status(500).json({ message: "Erro ao buscar animais", error: error.message });
@@ -24,7 +24,7 @@ const listarTodosAnimais = async (req, res) => {
 // GET (Buscar por ID)
 const buscarAnimalPorId = async (req, res) => {
     try {
-        const animal = await AnimalPerdidoEncontrado.findById(req.params.id);
+        const animal = await Animal.findById(req.params.id);
         if (!animal) {
             return res.status(404).json({ message: "Animal não encontrado." });
         }
@@ -37,7 +37,7 @@ const buscarAnimalPorId = async (req, res) => {
 
 const substituirAnimal = async (req, res) => {
     try {
-        const animal = await AnimalPerdidoEncontrado.findOneAndReplace(
+        const animal = await Animal.findOneAndReplace(
             { _id: req.params.id }, 
             req.body,              
             { new: true, runValidators: true }
@@ -54,7 +54,7 @@ const substituirAnimal = async (req, res) => {
 // PATCH (Atualização Parcial)
 const atualizarAnimal = async (req, res) => {
     try {
-        const animal = await AnimalPerdidoEncontrado.findByIdAndUpdate(
+        const animal = await Animal.findByIdAndUpdate(
             req.params.id,
             req.body, 
             { new: true, runValidators: true }
@@ -71,7 +71,7 @@ const atualizarAnimal = async (req, res) => {
 // DELETE (Excluir)
 const deletarAnimal = async (req, res) => {
     try {
-        const animal = await AnimalPerdidoEncontrado.findByIdAndDelete(req.params.id);
+        const animal = await Animal.findByIdAndDelete(req.params.id);
         if (!animal) {
             return res.status(404).json({ message: "Animal não encontrado para exclusão." });
         }

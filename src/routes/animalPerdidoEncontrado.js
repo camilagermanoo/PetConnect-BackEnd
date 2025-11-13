@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const animalPerdidoController = require('../controllers/animalPerdidoEncontradoController');
+const animalPerdidoController = require('../controllers/animalPerdidoEncontradoController.js');
 
 router.get('/', (req, res) => {
   res.send('API de Animais Perdidos e Encontrados funcionando');
