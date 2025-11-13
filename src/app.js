@@ -1,9 +1,11 @@
 const express = require('express');
-const routes = require('./routes');
+
+const originalRoutes = require('./routes/routes'); 
+const animalRoutes = require('./routes/animalPerdidoEncontrado'); 
 
 const app = express();
-
 app.use(express.json());
-app.use(routes);
+app.use(originalRoutes); 
+app.use(animalRoutes);
 
 module.exports = app;
