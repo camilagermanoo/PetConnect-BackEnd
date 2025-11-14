@@ -47,7 +47,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
 
     describe('POST /adocao incorreto deve retornar 400 quando:', () => {
 
-      test('a) Não tem nome', async () => {
+      test('a) O animal cadastrado não tem nome', async () => {
       const animalSemNome = { especie: 'Cachorro',
         idade: '2 anos', porte: 'Pequeno', sexo: 'Fêmea'};
       const res = await request(app).post('/adocao').send(animalSemNome);
@@ -58,7 +58,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body.error).toContain('O nome do animal é obrigatório');
       });
 
-      test('b) Não tem especie', async () => {
+      test('b) O animal cadastrado não tem especie', async () => {
       const animalSemEspecie = { nome: 'Belinha', idade: '2 anos',
         porte: 'Pequeno', sexo: 'Fêmea'};
       const res = await request(app).post('/adocao').send(animalSemEspecie);
@@ -69,7 +69,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body.error).toContain('A espécie é obrigatória');
       });
 
-      test('c) Não tem idade', async () => {
+      test('c) O animal cadastrado não tem idade', async () => {
       const animalSemIdade = { nome: 'Belinha', especie: 'Cachorro',
         porte: 'Pequeno', sexo: 'Fêmea'};
       const res = await request(app).post('/adocao').send(animalSemIdade);
@@ -80,7 +80,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body.error).toContain('A idade aproximada é obrigatória');
       });
 
-      test('d) Não tem porte', async () => {
+      test('d) O animal cadastrado não tem porte', async () => {
       const animalSemPorte = { nome: 'Belinha', especie: 'Cachorro',
         idade: '2 anos', sexo: 'Fêmea'};
       const res = await request(app).post('/adocao').send(animalSemPorte);
@@ -91,7 +91,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body.error).toContain('O porte é obrigatório');
       });
 
-      test('e) Não tem sexo', async () => {
+      test('e) O animal cadastrado não tem sexo', async () => {
       const animalSemSexo = { nome: 'Belinha', especie: 'Cachorro',
         idade: '2 anos', porte: 'Pequeno'};
       const res = await request(app).post('/adocao').send(animalSemSexo);
@@ -102,7 +102,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body.error).toContain('O sexo é obrigatório');
       });
 
-      test('f) Especie é inválida', async () => {
+      test('f) A especie do animal cadastrado é inválida', async () => {
         const novoAnimal = {
           nome: 'Piu',
           especie: 'Passaro',
@@ -141,7 +141,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
     });
 
     describe('GET /adocao/:id deve retornar erro quando:', () =>{
-      test('a) O animal buscado não existe', async () =>{
+      test('a) O animal buscado não existe (Retorna 404)', async () =>{
         const idVazio = new mongoose.Types.ObjectId();
         const res = await request(app).get(`/adocao/${idVazio}`);
 
@@ -149,7 +149,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
         expect(res.body).toHaveProperty('msg', 'Animal não encontrado');
       });
 
-      test('b) O ID buscado é inválido', async () => {
+      test('b) O ID buscado é inválido (Retorna 500)', async () => {
         const idInvalido = '123456';
         const res = await request(app).get(`/adocao${idInvalido}`);
 
@@ -182,7 +182,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body[2].nome).toBe('Bella');
     });
 
-    test('GET /adocao, ao mostrar lista, pode mostrar status diferentes', async () => {
+    test('GET /adocao, ao mostrar lista (Retorna 200), pode mostrar status diferentes', async () => {
       await AnimalAdocao.create([
         { nome: 'Luna', especie: 'Gato', idade: '3 anos', porte: 'Médio', sexo: 'Fêmea' }
       ]);
@@ -204,7 +204,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body[2].status).toBe('Em Processo');
     });
 
-    test('GET /adocao, ao mostrar lista vazia, retorna array vazio', async () => {
+    test('GET /adocao, ao mostrar lista vazia (Retorna 200), retorna array vazio', async () => {
       const res = await request(app).get('/adocao');
 
       expect(res.status).toBe(200);
@@ -246,7 +246,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
     });
 
     describe('PUT /adocao/:id deve retornar erro quando:', () => {
-      test('a) O animal não existe', async () => {
+      test('a) O animal a ser atualizado não existe (Retorna 404)', async () => {
         const idInexistente = new mongoose.Types.ObjectId();
         const atualizacao = {
           nome: 'Test',
@@ -262,7 +262,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
         expect(res.body).toHaveProperty('msg', 'Animal não encontrado para atualizar seus dados');
       });
 
-      test('b) Os dados forem inválidos', async () => {
+      test('b) Os dados inseridos são inválidos (Retorna 400)', async () => {
         const animal = await AnimalAdocao.create({
           nome: 'Max',
           especie: 'Cachorro',
@@ -284,7 +284,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
         expect(res.body).toHaveProperty('msg', 'Erro ao atualizar dados');
       });
 
-      test('c) Os dados forem incompletos', async () => {
+      test('c) Os dados inseridos estão incompletos (Retorna 400)', async () => {
         const animal = await AnimalAdocao.create({
           nome: 'Apolo',
           especie: 'Cachorro',
@@ -324,7 +324,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
     });
 
     describe('DELETE /adocao/:id deve retornar erro quando:', () => {
-      test('a) animal não existe', async () => {
+      test('a) O animal a ser deletado não existe (Retorna 404)', async () => {
         const idInexistente = new mongoose.Types.ObjectId();
 
         const res = await request(app).delete(`/adocao/${idInexistente}`);
@@ -333,7 +333,7 @@ describe('Testes de CRUD - Animais para Adoção', () => {
         expect(res.body).toHaveProperty('msg', 'Animal não encontrado para remoção');
       });
 
-      test('b) ID inválido', async () => {
+      test('b) ID inserido é inválido (Retorna 500)', async () => {
         const idInvalido = 'abc123';
 
         const res = await request(app).delete(`/adocao/${idInvalido}`);

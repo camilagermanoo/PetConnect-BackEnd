@@ -45,10 +45,10 @@ describe('Testes de Autenticação', () => {
       expect(res.body.user).toHaveProperty('id');
       expect(res.body.user.email).toBe('teste@example.com');
       expect(res.body.user.nome).toBe('João Silva');
-      expect(res.body.user).not.toHaveProperty('password'); // Senha não deve ser retornada
+      expect(res.body.user).not.toHaveProperty('password');
     });
 
-    test('POST /auth/register deve gerar um token JWT válido', async () => {
+    test('POST /auth/register, ao retornar 201, deve gerar um token JWT válido', async () => {
       const novoUsuario = {
         email: 'token@test.com',
         password: 'senha123',
@@ -62,7 +62,6 @@ describe('Testes de Autenticação', () => {
       expect(res.status).toBe(201);
       expect(res.body.token).toBeDefined();
 
-      // Verificar se o token é válido
       const decoded = jwt.verify(
         res.body.token, 
         process.env.JWT_SECRET || 'secret_key_test'
@@ -70,10 +69,10 @@ describe('Testes de Autenticação', () => {
       
       expect(decoded).toHaveProperty('id');
       expect(decoded).toHaveProperty('email', 'token@test.com');
-      expect(decoded).toHaveProperty('exp'); // Token tem expiração
+      expect(decoded).toHaveProperty('exp');
     });
 
-    test('POST /auth/register deve armazenar senha criptografada', async () => {
+    test('POST /auth/register, ao retornar 201, deve armazenar senha criptografada', async () => {
       const novoUsuario = {
         email: 'seguro@test.com',
         password: 'minhasenha',
@@ -86,16 +85,15 @@ describe('Testes de Autenticação', () => {
 
       expect(res.status).toBe(201);
 
-      // Buscar usuário no banco
       const usuarioDB = await User.findOne({ email: 'seguro@test.com' });
       
       expect(usuarioDB.password).not.toBe('minhasenha'); // Senha não está em texto puro
       expect(usuarioDB.password).toMatch(/^\$2[ayb]\$.{56}$/); // Formato bcrypt
     });
 
-    describe('POST /auth/register deve retornar erro quando:', () => {
+    describe('POST /auth/register deve retornar erro 400 quando:', () => {
 
-      test('a) Email não é fornecido', async () => {
+      test('a) O Email do usuário não é fornecido', async () => {
         const usuarioSemEmail = {
           password: '123456',
           nome: 'Teste'
@@ -111,7 +109,7 @@ describe('Testes de Autenticação', () => {
         expect(res.body.error).toContain('O email é obrigatório');
       });
 
-      test('b) Senha não é fornecida', async () => {
+      test('b) A Senha do usuário não é fornecida', async () => {
         const usuarioSemSenha = {
           email: 'teste@test.com',
           nome: 'Teste'
@@ -127,7 +125,7 @@ describe('Testes de Autenticação', () => {
         expect(res.body.error).toContain('A senha é obrigatória');
       });
 
-      test('c) Nome não é fornecido', async () => {
+      test('c) O Nome do usuário não é fornecido', async () => {
         const usuarioSemNome = {
           email: 'teste@test.com',
           password: '123456'
@@ -143,7 +141,7 @@ describe('Testes de Autenticação', () => {
         expect(res.body.error).toContain('O nome é obrigatório');
       });
 
-      test('d) Email é inválido', async () => {
+      test('d) O Email registrado é inválido', async () => {
         const emailInvalido = {
           email: 'email-invalido',
           password: '123456',
@@ -160,7 +158,7 @@ describe('Testes de Autenticação', () => {
         expect(res.body.error).toContain('Email inválido');
       });
 
-      test('e) Senha tem menos de 6 caracteres', async () => {
+      test('e) A Senha tem menos de 6 caracteres', async () => {
         const senhaCurta = {
           email: 'teste@test.com',
           password: '123',
@@ -177,7 +175,7 @@ describe('Testes de Autenticação', () => {
         expect(res.body.error).toContain('A senha deve ter pelo menos 6 caracteres');
       });
 
-      test('f) Email já está cadastrado', async () => {
+      test('f) O email a ser registrado já está cadastrado', async () => {
         const usuario = {
           email: 'duplicado@test.com',
           password: '123456',
@@ -207,7 +205,6 @@ describe('Testes de Autenticação', () => {
   describe('2 - Login de Usuário', () => {
 
     test('POST /auth/login deve retornar 200 e fazer login com sucesso', async () => {
-      // Primeiro, criar um usuário
       const usuario = {
         email: 'login@test.com',
         password: 'senha123',
@@ -215,7 +212,6 @@ describe('Testes de Autenticação', () => {
       };
       await request(app).post('/auth/register').send(usuario);
 
-      // Fazer login
       const credenciais = {
         email: 'login@test.com',
         password: 'senha123'
@@ -233,15 +229,13 @@ describe('Testes de Autenticação', () => {
       expect(res.body.user.nome).toBe('Usuário Teste');
     });
 
-    test('POST /auth/login deve gerar token JWT válido', async () => {
-      // Criar usuário
+    test('POST /auth/login, ao retornar 200, deve gerar token JWT válido', async () => {
       await request(app).post('/auth/register').send({
         email: 'jwt@test.com',
         password: 'senha456',
         nome: 'JWT Test'
       });
 
-      // Login
       const res = await request(app)
         .post('/auth/login')
         .send({
@@ -252,7 +246,6 @@ describe('Testes de Autenticação', () => {
       expect(res.status).toBe(200);
       expect(res.body.token).toBeDefined();
 
-      // Verificar token
       const decoded = jwt.verify(
         res.body.token,
         process.env.JWT_SECRET || 'secret_key_test'
@@ -262,15 +255,13 @@ describe('Testes de Autenticação', () => {
       expect(decoded).toHaveProperty('exp');
     });
 
-    test('POST /auth/login deve aceitar email em maiúsculas/minúsculas', async () => {
-      // Registrar com email minúsculo
+    test('POST /auth/login deve aceitar email em maiúsculas/minúsculas, retornando 200', async () => {
       await request(app).post('/auth/register').send({
         email: 'case@test.com',
         password: '123456',
         nome: 'Case Test'
       });
 
-      // Login com email em maiúsculas
       const res = await request(app)
         .post('/auth/login')
         .send({
@@ -284,7 +275,7 @@ describe('Testes de Autenticação', () => {
 
     describe('POST /auth/login deve retornar erro quando:', () => {
 
-      test('a) Email não é fornecido', async () => {
+      test('a) O Email do usuário não é fornecido (Retorna 400)', async () => {
         const res = await request(app)
           .post('/auth/login')
           .send({
@@ -295,7 +286,7 @@ describe('Testes de Autenticação', () => {
         expect(res.body).toHaveProperty('message', 'Email e senha são obrigatórios');
       });
 
-      test('b) Senha não é fornecida', async () => {
+      test('b) A Senha  do usuário não é fornecida (Retorna 400)', async () => {
         const res = await request(app)
           .post('/auth/login')
           .send({
@@ -306,7 +297,7 @@ describe('Testes de Autenticação', () => {
         expect(res.body).toHaveProperty('message', 'Email e senha são obrigatórios');
       });
 
-      test('c) Email não existe no sistema', async () => {
+      test('c) O Email inserido não existe no sistema (Retorna 401)', async () => {
         const res = await request(app)
           .post('/auth/login')
           .send({
@@ -318,8 +309,8 @@ describe('Testes de Autenticação', () => {
         expect(res.body).toHaveProperty('message', 'Credenciais inválidas');
       });
 
-      test('d) Senha está incorreta', async () => {
-        // Criar usuário
+      test('d) A Senha inserida está incorreta (Retorna 401)', async () => {
+        // Usuário exemplo
         await request(app).post('/auth/register').send({
           email: 'senhaerrada@test.com',
           password: 'senhaCorreta123',
