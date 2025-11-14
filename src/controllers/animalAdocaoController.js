@@ -39,11 +39,11 @@ const atualizarDadosAnimal = async (req, res) => {
             { new: true, runValidators: true }
         );
         if (!animal) {
-            return res.status(404).json({ msg: "Animal não encontrado para atualizar seus dados." });
+            return res.status(404).json({ msg: "Animal não encontrado para atualizar seus dados" });
         }
         res.status(200).json({ msg: "Dados do animal atualizados!", animal });
     } catch (error) {
-        res.status(400).json({ msg: "Erro ao atualizar dados.", error: error.message });
+        res.status(400).json({ msg: "Erro ao atualizar dados", error: error.message });
     }
 };
 
@@ -51,11 +51,11 @@ const removerAnimal = async (req, res) => {
     try {
         const animal = await animalAdocao.findByIdAndDelete(req.params.id);
         if (!animal) {
-            return res.status(404).json({ msg: "Animal não encontrado para remoção." });
+            return res.status(404).json({ msg: "Animal não encontrado para remoção" });
         }
         res.status(200).json({ msg: "Animal removido!" });
     } catch (error) {
-        res.status(500).json({ msg: "Erro ao deletar animal.", error: error.message });
+        res.status(500).json({ msg: "Erro ao deletar animal", error: error.message });
     }
 };
 
