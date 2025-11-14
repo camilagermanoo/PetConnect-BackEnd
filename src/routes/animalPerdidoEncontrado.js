@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const animalPerdidoController = require('../controllers/animalPerdidoEncontradoController.js');
+const animalPerdidoController = require('../controllers/animalPerdidoEncontradoController');
 
-router.get('/', (req, res) => {
-  res.send('API de Animais Perdidos e Encontrados funcionando');
-});
+//router.get('/', (req, res) => {
+//  res.send('API de Animais Perdidos e Encontrados funcionando');
+// });
+// Ignorado, pois causa erro nos testes
 
 // --- ROTAS PARA O CRUD DE ANIMAIS PERDIDOS/ENCONTRADOS ---
 

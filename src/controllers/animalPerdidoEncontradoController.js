@@ -1,13 +1,13 @@
-const AnimalPerdidoEncontrado = require("../models/AnimalPerdidoEncontrado.js");
+const AnimalPerdidoEncontrado = require("../models/AnimalPerdidoEncontrado");
 
 // POST (Criar)
 const criarAnimal = async (req, res) => {
     try {
         const novoAnimal = new AnimalPerdidoEncontrado(req.body);
         const animalSalvo = await novoAnimal.save();
-        res.status(201).json({ message: "Animal perdido/encontrado cadastrado com sucesso!", animal: animalSalvo });
+        res.status(201).json({ msg: "Animal perdido/encontrado cadastrado com sucesso!", animal: animalSalvo });
     } catch (error) {
-        res.status(400).json({ message: "Erro ao cadastrar animal", error: error.message });
+        res.status(400).json({ msg: "Erro ao cadastrar animal", error: error.message });
     }
 };
 
@@ -17,7 +17,7 @@ const listarTodosAnimais = async (req, res) => {
         const animais = await AnimalPerdidoEncontrado.find();
         res.status(200).json(animais);
     } catch (error) {
-        res.status(500).json({ message: "Erro ao buscar animais", error: error.message });
+        res.status(500).json({ msg: "Erro ao buscar animais", error: error.message });
     }
 };
 
@@ -26,11 +26,11 @@ const buscarAnimalPorId = async (req, res) => {
     try {
         const animal = await AnimalPerdidoEncontrado.findById(req.params.id);
         if (!animal) {
-            return res.status(404).json({ message: "Animal não encontrado." });
+            return res.status(404).json({ msg: "Animal não encontrado" });
         }
         res.status(200).json(animal);
     } catch (error) {
-        res.status(500).json({ message: "Erro ao buscar animal", error: error.message });
+        res.status(500).json({ msg: "Erro ao buscar animal", error: error.message });
     }
 };
 
@@ -43,11 +43,11 @@ const substituirAnimal = async (req, res) => {
             { new: true, runValidators: true }
         );
         if (!animal) {
-            return res.status(404).json({ message: "Animal não encontrado para substituição." });
+            return res.status(404).json({ msg: "Animal não encontrado para substituição" });
         }
-        res.status(200).json({ message: "Animal substituído com sucesso!", animal });
+        res.status(200).json({ msg: "Animal substituído com sucesso!", animal });
     } catch (error) {
-        res.status(400).json({ message: "Erro ao substituir animal", error: error.message });
+        res.status(400).json({ msg: "Erro ao substituir animal", error: error.message });
     }
 };
 
@@ -60,11 +60,11 @@ const atualizarAnimal = async (req, res) => {
             { new: true, runValidators: true }
         );
         if (!animal) {
-            return res.status(404).json({ message: "Animal não encontrado para atualização." });
+            return res.status(404).json({ msg: "Animal não encontrado para atualização" });
         }
-        res.status(200).json({ message: "Animal atualizado com sucesso!", animal });
+        res.status(200).json({ msg: "Animal atualizado com sucesso!", animal });
     } catch (error) {
-        res.status(400).json({ message: "Erro ao atualizar animal", error: error.message });
+        res.status(400).json({ msg: "Erro ao atualizar animal", error: error.message });
     }
 };
 
@@ -73,11 +73,11 @@ const deletarAnimal = async (req, res) => {
     try {
         const animal = await AnimalPerdidoEncontrado.findByIdAndDelete(req.params.id);
         if (!animal) {
-            return res.status(404).json({ message: "Animal não encontrado para exclusão." });
+            return res.status(404).json({ msg: "Animal não encontrado para exclusão" });
         }
-        res.status(200).json({ message: "Animal removido com sucesso!" });
+        res.status(200).json({ msg: "Animal removido com sucesso!" });
     } catch (error) {
-        res.status(500).json({ message: "Erro ao deletar animal", error: error.message });
+        res.status(500).json({ msg: "Erro ao deletar animal", error: error.message });
     }
 };
 
