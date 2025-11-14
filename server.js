@@ -1,13 +1,23 @@
-const app = require('./src/app.js');
-const connectDB = require('./config/db.js');
+require('dotenv').config();
+const express = require('express');
+const conectarBanco = require('./src/db');
 
-// Conecta ao banco real SOMENTE quando rodar o servidor
-connectDB();
+const rotasPrincipais = require('./src/routes/routes');
 
-// Define a porta a partir do ambiente ou usa 3000 como padrão
+const app = express();
+
+app.use(express.json());
+
+
+conectarBanco();
+
+app.use('/api', rotasPrincipais);
+
+app.get('/', (req, res) => {
+    res.send('API PetConnect rodando! 🐶🐱');
+});
+
 const PORT = process.env.PORT || 3000;
-
-// Inicia o servidor e o faz ouvir na porta definida
 app.listen(PORT, () => {
-  console.log(`Servidor rodando com sucesso na porta ${PORT}`);
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });

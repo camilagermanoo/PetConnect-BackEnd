@@ -1,8 +1,11 @@
 const { Router } = require('express');
 const router = Router();
 
-router.get('/', (req, res) => {
-  res.send('API funcionando');
-});
+const rotasAdocao = require('./animalAdocao.js');
+const rotasPerdidos = require('./animalPerdidoEncontrado.js');
+
+router.use('/adocao', rotasAdocao);
+
+router.use('/perdidos', rotasPerdidos);
 
 module.exports = router;
