@@ -1,0 +1,472 @@
+openapi: 3.0.0
+info:
+  title: PetConnect API
+  description: API PetConnect para adoção e resgate de pets.
+  version:
+servers:
+  - url: http://localhost:3000/api
+    description: Servidor de Desenvolvimento
+
+tags:
+  - name: Adoção
+    description: Operações relacionadas a animais para adoção.
+  - name: Animal para resgate
+    description: Operações para animais que foram perdidos.
+  - name: Autenticação
+    description: Operações de registro e login de usuários.
+
+paths:
+  /adocao:
+    post:
+      summary: Cadastra animais para adoção
+      tags:
+        - Adoção
+      description: Cadastra animais para adoção com os campos "nome", "especie", "idade", "porte", "sexo" e "status".
+      responses:
+        201:
+          description: Animal para adoção cadastrado com sucesso
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AnimalAdocao'
+        400:
+          description: Requisição inválida. Ocorreu um erro ao cadastrar o animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    get:
+      summary: Lista todos os animais para adoção
+      tags:
+        - Adoção
+      description: Retorna uma lista de todos os animais disponíveis para adoção.
+      responses:
+        200:
+          description: Sucesso - Lista de animais.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalAdocao'
+        500:
+          description: Erro interno ao listar animais.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /adocao/:id:
+    get:
+      summary: Buscar animal pelo id
+      tags:
+        - Adoção
+      description: Retorna o animal buscado pelo id.
+      responses:
+        200:
+          description: Sucesso - Animalzinho aqui.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalAdocao'
+        500:
+          description: Erro interno ao buscar animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    put:
+      summary: Atualizar animal pelo id com todos os campos
+      tags:
+        - Adoção
+      description: Atualiza o animal para adoção com os campos "nome", "especie", "idade", "porte", "sexo" e "status".
+      responses:
+        200:
+          description: Sucesso - Dados do animal atualizados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalAdocao'
+        400:
+          description: Requisição inválida. Ocorreu um erro ao atualizar o animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        404:
+          description: Erro - Animal não encontrado para atualizar seus dados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    delete:
+      summary: Deletar um animal pelo id
+      tags:
+        - Adoção
+      description: Remover o animal para adoção de nosso banco de dados.
+      responses:
+        200:
+          description: Sucesso! Animal removido. Da próxima vez que você consultar ele não estará listado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalAdocao'
+        404:
+          description: Erro - Animal não encontrado para remoção.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        500:
+          description: Erro interno ao remover animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+          
+  /perdidos:
+    post:
+      summary: Cadastrar animal perdido
+      tags:
+        - Animal para resgate
+      description: Cadastra animais para resgate com os campos "nome", "especie", "idade", "porte", "status", "descricao", "contato" e "local".
+      responses:
+        201:
+          description: Animal para resgate cadastrado com sucesso.
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AnimalPerdido'
+        400:
+          description: Requisição inválida. Ocorreu um erro ao cadastrar o animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    get:
+      summary: Lista todos os animais para resgate
+      tags:
+        - Animal para resgate
+      description: Retorna uma lista de todos os animais que foram desaparecidos.
+      responses:
+        200:
+          description: Sucesso - Lista de animais.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalPerdido'
+        500:
+          description: Erro interno ao listar animais.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /perdidos/:id:
+    get:
+      summary: Buscar animal pelo id
+      tags:
+        - Animal para resgate
+      description: Retorna o animal buscado pelo id.
+      responses:
+        200:
+          description: Sucesso - Animalzinho aqui.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalPerdido'
+        404:
+          description: Erro - Animal não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        500:
+          description: Erro interno ao buscar animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    put:
+      summary: Atualizar animal pelo id com todos os campos
+      tags:
+        - Animal para resgate
+      description: Atualiza o animal para resgate com os campos "nome", "especie", "idade", "porte", "status", "descricao", "contato" e "local".
+      responses:
+        200:
+          description: Sucesso - Dados do animal atualizados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalPerdido'
+        400:
+          description: Requisição inválida. Ocorreu um erro ao atualizar o animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        404:
+          description: Erro - Animal não encontrado para atualizar seus dados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    patch:
+      summary: Atualizar determinado dado do animal pelo id
+      tags:
+        - Animal para resgate
+      description: Atualiza o animal para resgate
+      responses:
+        200:
+          description: Sucesso - Animal atualizado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalPerdido'
+        400:
+          description: Requisição inválida. Ocorreu um erro ao atualizar o animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        404:
+          description: Erro - Animal não encontrado para atualizá-lo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    delete:
+      summary: Deletar um animal pelo id
+      tags:
+        - Animal para resgate
+      description: Remove o animal desaparecido de nosso banco de dados.
+      responses:
+        200:
+          description: Sucesso! Animal removido. Da próxima vez que você consultar ele não estará listado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnimalPerdido'
+        404:
+          description: Erro - Animal não encontrado para remoção.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        500:
+          description: Erro interno ao remover animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /auth/register:
+    post:
+      tags:
+        - Autenticação
+      summary: Registra um novo usuário
+      description: Cria um novo usuário no sistema e retorna os dados do usuário e um token JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterInput'
+      responses:
+        201:
+          description: Usuário registrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        400:
+          description: Erro de validação (email já existe ou dados ausentes).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Autentica um usuário (login)
+      description: Verifica as credenciais (email e senha) e retorna os dados do usuário e um token JWT se forem válidos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginInput'
+      responses:
+        200:
+          description: Login realizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        400:
+          description: Dados ausentes (email ou senha não fornecidos).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
+          description: Credenciais inválidas (email não encontrado ou senha incorreta).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Erro interno do servidor ao tentar fazer login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'              
+components:
+  schemas:
+    AnimalAdocao:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 60d5f1b2b3f3b4a2c8e1e1e1
+        nome:
+          type: string
+          example: "Rex"
+        especie:
+          type: string
+          example: "Cachorro"
+        idade:
+          type: string
+          example: "17"
+        porte:
+          type: string
+          example: "Médio"
+        sexo:
+          type: string
+          example: "Macho"
+        status:
+          type: string
+          example: "Disponível"
+    AnimalPerdido:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 60d5f1b2b3f3b4a2c8e1e1e1
+        nome:
+          type: string
+          example: "Lili"
+        especie:
+          type: string
+          example: "Gato"
+        idade:
+          type: number
+          example: 1
+        porte:
+          type: string
+          example: "Médio"
+        status:
+          type: string
+          example: "Perdido"
+        descricao:
+          type: string
+          example: "Marrom com manchas brancas"
+        contato:
+          type: string
+          example: "(61) 98888-8888"
+        local:
+          type: string
+          example: "Residencial Paranoá"
+    Erro:
+      type: object
+      properties:
+        msg:
+          type: string
+    
+    UserRegisterInput:
+      type: object
+      properties:
+        nome:
+          type: string
+          example: "Maria Silva"
+        email:
+          type: string
+          format: email
+          example: "maria.silva@example.com"
+        password:
+          type: string
+          format: password
+          example: "senhaForte123"
+      required:
+        - nome
+        - email
+        - password
+
+    UserLoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "maria.silva@example.com"
+        password:
+          type: string
+          format: password
+          example: "senhaForte123"
+      required:
+        - email
+        - password
+
+    UserInResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "60d5f1b2b3f3b4a2c8e1e1e1"
+        email:
+          type: string
+          example: "maria.silva@example.com"
+        nome:
+          type: string
+          example: "Maria Silva"
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Usuário registrado com sucesso!"
+        user:
+          $ref: '#/components/schemas/UserInResponse'
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYw..."
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Credenciais inválidas"
