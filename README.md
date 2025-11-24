@@ -86,3 +86,10 @@ npm run test
 ```
 
 ---
+
+## 👥 Integrantes do Grupo
+
+* José Lucas Ferreira de Sousa
+* Camila Germano Rodrigues
+* Mariana Libânio Barbosa
+* Arthur Luther Azevedo Pendleton 
