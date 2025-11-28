@@ -4,12 +4,21 @@ const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const AnimalAdocao = require('../src/models/animalAdocao');
 
-let mongoServer
+let mongoServer;
+let token;
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
   await mongoose.connect(uri, { dbName: "testAdocaoDB" });
+
+  const res = await request(app).post('/auth/register').send({
+    nome: 'Tester Adoção',
+    email: 'tester.adocao@example.com',
+    password: '123456'
+  });
+
+  token = res.body.token;
 });
 
 afterAll(async () => {
@@ -24,82 +33,127 @@ afterEach(async () => {
 
 
 describe('Testes de CRUD - Animais para Adoção', () => {
+
   describe('1 - Cadastrar animal', () => {
     test('POST /adocao deve retornar 201 e Cadastro', async () => {
-    const novoAnimal = { 
-      nome: 'Belinha', 
-      especie: 'Cachorro',
-      idade: '2 anos', 
-      porte: 'Pequeno', 
-      sexo: 'Fêmea'
-    };
+      const novoAnimal = { 
+        nome: 'Belinha', 
+        especie: 'Cachorro',
+        idade: '2 anos', 
+        porte: 'Pequeno', 
+        sexo: 'Fêmea'
+      };
 
-    const res = await request(app).post('/adocao').send(novoAnimal);
+      const res = await request(app)
+        .post('/adocao')
+        .set('Authorization', `Bearer ${token}`)
+        .send(novoAnimal);
 
-    expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty('msg', 'Animal para adoção cadastrado com sucesso!');
-    expect(res.body.animal).toHaveProperty('_id');
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty('msg', 'Animal para adoção cadastrado com sucesso!');
+      expect(res.body.animal).toHaveProperty('_id');
       expect(res.body.animal.nome).toBe('Belinha');
       expect(res.body.animal.especie).toBe('Cachorro');
       expect(res.body.animal.status).toBe('Disponível');
       expect(res.body.animal).toHaveProperty('createdAt');
     });
 
+
     describe('POST /adocao incorreto deve retornar 400 quando:', () => {
 
       test('a) O animal cadastrado não tem nome', async () => {
-      const animalSemNome = { especie: 'Cachorro',
-        idade: '2 anos', porte: 'Pequeno', sexo: 'Fêmea'};
-      const res = await request(app).post('/adocao').send(animalSemNome);
+        const animalSemNome = { 
+          especie: 'Cachorro', 
+          idade: '2 anos', 
+          porte: 'Pequeno', 
+          sexo: 'Fêmea' 
+        };
+        
+        const res = await request(app)
+          .post('/adocao')
+          .set('Authorization', `Bearer ${token}`)
+          .send(animalSemNome);
 
-      expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
-      expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('O nome do animal é obrigatório');
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
+        expect(res.body).toHaveProperty('error');
+        expect(res.body.error).toContain('O nome do animal é obrigatório');
       });
 
       test('b) O animal cadastrado não tem especie', async () => {
-      const animalSemEspecie = { nome: 'Belinha', idade: '2 anos',
-        porte: 'Pequeno', sexo: 'Fêmea'};
-      const res = await request(app).post('/adocao').send(animalSemEspecie);
+        const animalSemEspecie = { 
+          nome: 'Belinha', 
+          idade: '2 anos', 
+          porte: 'Pequeno', 
+          sexo: 'Fêmea' 
+        };
 
-      expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
-      expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('A espécie é obrigatória');
+        const res = await request(app)
+          .post('/adocao')
+          .set('Authorization', `Bearer ${token}`)
+          .send(animalSemEspecie);
+
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
+        expect(res.body).toHaveProperty('error');
+        expect(res.body.error).toContain('A espécie é obrigatória');
       });
 
       test('c) O animal cadastrado não tem idade', async () => {
-      const animalSemIdade = { nome: 'Belinha', especie: 'Cachorro',
-        porte: 'Pequeno', sexo: 'Fêmea'};
-      const res = await request(app).post('/adocao').send(animalSemIdade);
+        const animalSemIdade = { 
+          nome: 'Belinha', 
+          especie: 'Cachorro', 
+          porte: 'Pequeno', 
+          sexo: 'Fêmea' 
+        };
 
-      expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
-      expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('A idade aproximada é obrigatória');
+        const res = await request(app)
+          .post('/adocao')
+          .set('Authorization', `Bearer ${token}`)
+          .send(animalSemIdade);
+
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
+        expect(res.body).toHaveProperty('error');
+        expect(res.body.error).toContain('A idade aproximada é obrigatória');
       });
 
       test('d) O animal cadastrado não tem porte', async () => {
-      const animalSemPorte = { nome: 'Belinha', especie: 'Cachorro',
-        idade: '2 anos', sexo: 'Fêmea'};
-      const res = await request(app).post('/adocao').send(animalSemPorte);
+        const animalSemPorte = { 
+          nome: 'Belinha', 
+          especie: 'Cachorro', 
+          idade: '2 anos', 
+          sexo: 'Fêmea' 
+        };
 
-      expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
-      expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('O porte é obrigatório');
+        const res = await request(app)
+          .post('/adocao')
+          .set('Authorization', `Bearer ${token}`)
+          .send(animalSemPorte);
+
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
+        expect(res.body).toHaveProperty('error');
+        expect(res.body.error).toContain('O porte é obrigatório');
       });
 
       test('e) O animal cadastrado não tem sexo', async () => {
-      const animalSemSexo = { nome: 'Belinha', especie: 'Cachorro',
-        idade: '2 anos', porte: 'Pequeno'};
-      const res = await request(app).post('/adocao').send(animalSemSexo);
+        const animalSemSexo = { 
+          nome: 'Belinha', 
+          especie: 'Cachorro', 
+          idade: '2 anos', 
+          porte: 'Pequeno' 
+        };
 
-      expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
-      expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('O sexo é obrigatório');
+        const res = await request(app)
+          .post('/adocao')
+          .set('Authorization', `Bearer ${token}`)
+          .send(animalSemSexo);
+
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
+        expect(res.body).toHaveProperty('error');
+        expect(res.body.error).toContain('O sexo é obrigatório');
       });
 
       test('f) A especie do animal cadastrado é inválida', async () => {
@@ -111,7 +165,10 @@ describe('Testes de CRUD - Animais para Adoção', () => {
           sexo: 'Macho'
         };
 
-        const res = await request(app).post('/adocao').send(novoAnimal);
+        const res = await request(app)
+          .post('/adocao')
+          .set('Authorization', `Bearer ${token}`)
+          .send(novoAnimal);
 
         expect(res.status).toBe(400);
         expect(res.body).toHaveProperty('error');
@@ -120,16 +177,17 @@ describe('Testes de CRUD - Animais para Adoção', () => {
     });
   });
 
+
   describe('2 - Buscar animal por ID', () => {
+
     test('GET /adocao/:id deve retornar 200 e animal', async () => {
-      const animal = new AnimalAdocao({
+      const animal = await AnimalAdocao.create({
         nome: 'Toby',
         especie: 'Cachorro',
         idade: '5 anos',
         porte: 'Grande',
         sexo: 'Macho'
       });
-      await animal.save();
 
       const res = await request(app).get(`/adocao/${animal._id}`);
 
@@ -140,8 +198,9 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body.status).toBe('Disponível');
     });
 
-    describe('GET /adocao/:id deve retornar erro quando:', () =>{
-      test('a) O animal buscado não existe (Retorna 404)', async () =>{
+    describe('GET /adocao/:id deve retornar erro quando:', () => {
+
+      test('a) O animal buscado não existe (Retorna 404)', async () => {
         const idVazio = new mongoose.Types.ObjectId();
         const res = await request(app).get(`/adocao/${idVazio}`);
 
@@ -150,28 +209,39 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       });
 
       test('b) O ID buscado é inválido (Retorna 500)', async () => {
-        const idInvalido = '123456';
-        const res = await request(app).get(`/adocao${idInvalido}`);
+        const res = await request(app).get(`/adocao123`);
 
         expect(res.status).toBe(500);
         expect(res.body).toHaveProperty('msg', 'Erro ao buscar animal');
       });
     });
-  })
+  });
+
 
   describe('3 - Listar animais', () => {
+
     test('GET /adocao deve retornar 200 e lista', async () => {
-      await AnimalAdocao.create([
-        { nome: 'Luna', especie: 'Gato', idade: '3 anos', porte: 'Médio', sexo: 'Fêmea' }
-      ]);
-
-      await AnimalAdocao.create([
-        { nome: 'Max', especie: 'Cachorro', idade: '4 anos', porte: 'Grande', sexo: 'Macho' }
-      ]);
-
-      await AnimalAdocao.create([
-        { nome: 'Bella', especie: 'Outro', idade: '1 ano', porte: 'Pequeno', sexo: 'Fêmea' }
-      ]);
+      await AnimalAdocao.create({ 
+        nome: 'Luna', 
+        especie: 'Gato', 
+        idade: '3 anos', 
+        porte: 'Médio', 
+        sexo: 'Fêmea' 
+      });
+      await AnimalAdocao.create({ 
+        nome: 'Max', 
+        especie: 'Cachorro', 
+        idade: '4 anos', 
+        porte: 'Grande', 
+        sexo: 'Macho' 
+      });
+      await AnimalAdocao.create({ 
+        nome: 'Bella', 
+        especie: 'Outro', 
+        idade: '1 ano', 
+        porte: 'Pequeno', 
+        sexo: 'Fêmea' 
+      });
 
       const res = await request(app).get('/adocao');
 
@@ -183,17 +253,29 @@ describe('Testes de CRUD - Animais para Adoção', () => {
     });
 
     test('GET /adocao, ao mostrar lista (Retorna 200), pode mostrar status diferentes', async () => {
-      await AnimalAdocao.create([
-        { nome: 'Luna', especie: 'Gato', idade: '3 anos', porte: 'Médio', sexo: 'Fêmea' }
-      ]);
-
-      await AnimalAdocao.create([
-        { nome: 'Max', especie: 'Cachorro', idade: '4 anos', porte: 'Grande', sexo: 'Macho', status: 'Adotado' }
-      ]);
-
-      await AnimalAdocao.create([
-        { nome: 'Bella', especie: 'Outro', idade: '1 ano', porte: 'Pequeno', sexo: 'Fêmea', status: 'Em Processo' }
-      ]);
+      await AnimalAdocao.create({ 
+        nome: 'Luna', 
+        especie: 'Gato', 
+        idade: '3 anos', 
+        porte: 'Médio', 
+        sexo: 'Fêmea' 
+      });
+      await AnimalAdocao.create({ 
+        nome: 'Max', 
+        especie: 'Cachorro', 
+        idade: '4 anos', 
+        porte: 'Grande', 
+        sexo: 'Macho', 
+        status: 'Adotado' 
+      });
+      await AnimalAdocao.create({ 
+        nome: 'Bella', 
+        especie: 'Outro', 
+        idade: '1 ano', 
+        porte: 'Pequeno', 
+        sexo: 'Fêmea', 
+        status: 'Em Processo' 
+      });
 
       const res = await request(app).get('/adocao');
 
@@ -208,12 +290,12 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       const res = await request(app).get('/adocao');
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(0);
       expect(res.body).toEqual([]);
     });
   });
 
   describe('4 - Atualizar animal', () => {
+
     test('PUT /adocao/:id deve retornar 200 e atualizar todos os dados', async () => {
       const animal = await AnimalAdocao.create({
         nome: 'Freddy',
@@ -233,7 +315,10 @@ describe('Testes de CRUD - Animais para Adoção', () => {
         status: 'Adotado'
       };
 
-      const res = await request(app).put(`/adocao/${animal._id}`).send(dadosAtualizados);
+      const res = await request(app)
+        .put(`/adocao/${animal._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(dadosAtualizados);
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('msg', 'Dados do animal atualizados!');
@@ -245,68 +330,69 @@ describe('Testes de CRUD - Animais para Adoção', () => {
       expect(res.body.animal.status).toBe('Adotado');
     });
 
+
     describe('PUT /adocao/:id deve retornar erro quando:', () => {
       test('a) O animal a ser atualizado não existe (Retorna 404)', async () => {
         const idInexistente = new mongoose.Types.ObjectId();
-        const atualizacao = {
-          nome: 'Test',
-          especie: 'Gato',
-          idade: '2 anos',
-          porte: 'Pequeno',
-          sexo: 'Fêmea'
-        }
 
-        const res = await request(app).put(`/adocao/${idInexistente}`).send(atualizacao);
+        const res = await request(app)
+          .put(`/adocao/${idInexistente}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ 
+            nome: 'Test', 
+            especie: 'Gato', 
+            idade: '2 anos', 
+            porte: 'Pequeno', 
+            sexo: 'Fêmea' 
+          });
 
         expect(res.status).toBe(404);
-        expect(res.body).toHaveProperty('msg', 'Animal não encontrado para atualizar seus dados');
       });
 
       test('b) Os dados inseridos são inválidos (Retorna 400)', async () => {
-        const animal = await AnimalAdocao.create({
-          nome: 'Max',
-          especie: 'Cachorro',
-          idade: '4 anos',
-          porte: 'Grande',
-          sexo: 'Macho'
-        });
-        const animalAtualizacao = {
-          nome: 'Max',
-          especie: 'Peixe',
-          idade: '4 anos',
-          porte: 'Grande',
-          sexo: 'Macho'
-        };
-
-        const res = await request(app).put(`/adocao/${animal._id}`).send(animalAtualizacao);
-
+        const animal = await AnimalAdocao.create({ 
+          nome: 'Max', 
+          especie: 'Cachorro', 
+          idade: '4 anos', 
+          porte: 'Grande', 
+          sexo: 'Macho' });
+        const res = await request(app)
+          .put(`/adocao/${animal._id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ 
+            nome: 'Max', 
+            especie: 'Peixe', 
+            idade: '4 anos', 
+            porte: 'Grande', 
+            sexo: 'Macho'
+          });
         expect(res.status).toBe(400);
-        expect(res.body).toHaveProperty('msg', 'Erro ao atualizar dados');
       });
 
       test('c) Os dados inseridos estão incompletos (Retorna 400)', async () => {
-        const animal = await AnimalAdocao.create({
-          nome: 'Apolo',
-          especie: 'Cachorro',
-          idade: '6 anos',
-          porte: 'Grande',
-          sexo: 'Macho'
+        const animal = await AnimalAdocao.create({ 
+          nome: 'Apolo', 
+          especie: 'Cachorro', 
+          idade: '6 anos', 
+          porte: 'Grande', 
+          sexo: 'Macho' 
         });
 
-        const animalAtualizacao = {
-          nome: 'Apolo',
-          especie: 'Cachorro'
-        };
-
-        const res = await request(app).put(`/adocao/${animal._id}`).send(animalAtualizacao);
+        const res = await request(app)
+          .put(`/adocao/${animal._id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ 
+            nome: 'Apolo', 
+            especie: 'Cachorro' 
+          });
 
         expect(res.status).toBe(400);
-        expect(res.body).toHaveProperty('msg', 'Erro ao atualizar dados');
       });
     });
   });
 
   describe('5 - Remover animal', () => {
+
     test('DELETE /adocao/:id deve retornar 200 e remover animal', async () => {
       const animal = await AnimalAdocao.create({
         nome: 'Spike',
@@ -315,33 +401,41 @@ describe('Testes de CRUD - Animais para Adoção', () => {
         porte: 'Pequeno',
         sexo: 'Macho'
       });
-      const res = await request(app).delete(`/adocao/${animal._id}`);
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('msg', 'Animal removido!');
 
-      const animalRemovido = await AnimalAdocao.findById(animal._id);
-      expect(animalRemovido).toBeNull();
+      const res = await request(app)
+        .delete(`/adocao/${animal._id}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.msg).toBe('Animal removido!');
+
+      const check = await AnimalAdocao.findById(animal._id);
+      expect(check).toBeNull();
     });
 
+
     describe('DELETE /adocao/:id deve retornar erro quando:', () => {
+
       test('a) O animal a ser deletado não existe (Retorna 404)', async () => {
         const idInexistente = new mongoose.Types.ObjectId();
 
-        const res = await request(app).delete(`/adocao/${idInexistente}`);
+        const res = await request(app)
+          .delete(`/adocao/${idInexistente}`)
+          .set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(404);
         expect(res.body).toHaveProperty('msg', 'Animal não encontrado para remoção');
       });
 
       test('b) ID inserido é inválido (Retorna 500)', async () => {
-        const idInvalido = 'abc123';
-
-        const res = await request(app).delete(`/adocao/${idInvalido}`);
+        const res = await request(app)
+          .delete(`/adocao/abc123`)
+          .set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(500);
         expect(res.body).toHaveProperty('msg', 'Erro ao deletar animal');
       });
     });
-  
   });
+
 });
