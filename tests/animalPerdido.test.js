@@ -1,4 +1,3 @@
-// tests/animalPerdido.test.js
 const request = require('supertest');
 const app = require('../src/app');
 const mongoose = require('mongoose');
@@ -6,11 +5,20 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const AnimalPerdidoEncontrado = require('../src/models/AnimalPerdidoEncontrado');
 
 let mongoServer;
+let token;
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
   await mongoose.connect(uri, { dbName: "testPerdidosDB" });
+
+  const res = await request(app).post('/auth/register').send({
+    nome: 'Tester Perdido',
+    email: 'tester.perdido@example.com',
+    password: '123456'
+  });
+
+  token = res.body.token;
 });
 
 afterAll(async () => {
@@ -24,6 +32,7 @@ afterEach(async () => {
 });
 
 describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
+
   describe('1 - Cadastrar animal perdido', () => {
 
     test('POST /perdidos/animais-perdidos deve retornar 201 e cadastrar', async () => {
@@ -40,6 +49,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
       const res = await request(app)
         .post('/perdidos/animais-perdidos')
+        .set('Authorization', `Bearer ${token}`)
         .send(novoAnimal);
 
       expect(res.status).toBe(201);
@@ -65,6 +75,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemNome);
 
         expect(res.status).toBe(400);
@@ -86,6 +97,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemEspecie);
 
         expect(res.status).toBe(400);
@@ -107,6 +119,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemIdade);
 
         expect(res.status).toBe(400);
@@ -128,6 +141,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemPorte);
 
         expect(res.status).toBe(400);
@@ -149,6 +163,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemStatus);
 
         expect(res.status).toBe(400);
@@ -170,6 +185,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemDescricao);
 
         expect(res.status).toBe(400);
@@ -191,6 +207,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemContato);
 
         expect(res.status).toBe(400);
@@ -212,6 +229,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(animalSemLocal);
 
         expect(res.status).toBe(400);
@@ -234,6 +252,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(porteInvalido);
 
         expect(res.status).toBe(400);
@@ -255,19 +274,21 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
         const res = await request(app)
           .post('/perdidos/animais-perdidos')
+          .set('Authorization', `Bearer ${token}`)
           .send(statusInvalido);
 
         expect(res.status).toBe(400);
         expect(res.body).toHaveProperty('msg', 'Erro ao cadastrar animal');
         expect(res.body).toHaveProperty('error');
       });
+
     });
   });
 
   describe('2 - Buscar animal por ID', () => {
 
     test('GET /perdidos/animais-perdidos/:id deve retornar 200 e animal', async () => {
-      const animal = new AnimalPerdidoEncontrado({
+      const animal = await AnimalPerdidoEncontrado.create({
         nome: 'Toby',
         especie: 'Cachorro',
         idade: 5,
@@ -277,7 +298,6 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
         contato: '(11) 91111-0000',
         local: 'Santana'
       });
-      await animal.save();
 
       const res = await request(app).get(`/perdidos/animais-perdidos/${animal._id}`);
 
@@ -291,57 +311,54 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
     describe('GET /perdidos/animais-perdidos/:id deve retornar erro quando:', () => {
 
       test('a) O animal buscado não existe (Retorna 404)', async () => {
-        const idVazio = new mongoose.Types.ObjectId();
-        const res = await request(app).get(`/perdidos/animais-perdidos/${idVazio}`);
-
+        const id = new mongoose.Types.ObjectId();
+        const res = await request(app).get(`/perdidos/animais-perdidos/${id}`);
         expect(res.status).toBe(404);
         expect(res.body).toHaveProperty('msg', 'Animal não encontrado');
       });
 
       test('b) O ID buscado é inválido (Retorna 500)', async () => {
-        const idInvalido = '123456';
-        const res = await request(app).get(`/perdidos/animais-perdidos/${idInvalido}`);
-
+        const res = await request(app).get('/perdidos/animais-perdidos/123456');
         expect(res.status).toBe(500);
         expect(res.body).toHaveProperty('msg', 'Erro ao buscar animal');
       });
+
     });
+
   });
 
   describe('3 - Listar animais', () => {
 
     test('GET /perdidos/animais-perdidos deve retornar 200 e lista', async () => {
-      await AnimalPerdidoEncontrado.create({
-        nome: 'Luna',
-        especie: 'Gato',
-        idade: 3,
-        porte: 'Pequeno',
-        status: 'Perdido',
-        descricao: 'Siamês',
-        contato: '111',
-        local: 'Centro'
+      await AnimalPerdidoEncontrado.create({ 
+        nome: 'Luna', 
+        especie: 'Gato', 
+        idade: 3, 
+        porte: 'Pequeno', 
+        status: 'Perdido', 
+        descricao: 'Siamês', 
+        contato: '111', 
+        local: 'Centro' 
       });
-
-      await AnimalPerdidoEncontrado.create({
-        nome: 'Max',
-        especie: 'Cachorro',
-        idade: 4,
-        porte: 'Grande',
-        status: 'Encontrado',
-        descricao: 'Labrador',
-        contato: '222',
-        local: 'Zona Sul'
+      await AnimalPerdidoEncontrado.create({ 
+        nome: 'Max', 
+        especie: 'Cachorro', 
+        idade: 4, 
+        porte: 'Grande', 
+        status: 'Encontrado', 
+        descricao: 'Labrador', 
+        contato: '222', 
+        local: 'Zona Sul' 
       });
-
-      await AnimalPerdidoEncontrado.create({
-        nome: 'Bella',
-        especie: 'Gato',
-        idade: 1,
-        porte: 'Pequeno',
-        status: 'Perdido',
-        descricao: 'Persa',
-        contato: '333',
-        local: 'Zona Leste'
+      await AnimalPerdidoEncontrado.create({ 
+        nome: 'Bella', 
+        especie: 'Gato', 
+        idade: 1, 
+        porte: 'Pequeno', 
+        status: 'Perdido', 
+        descricao: 'Persa', 
+        contato: '333', 
+        local: 'Zona Leste' 
       });
 
       const res = await request(app).get('/perdidos/animais-perdidos');
@@ -353,7 +370,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
       expect(res.body[2].nome).toBe('Bella');
     });
 
-    test('GET /perdidos/animais-perdidos, ao mostrar lista (retorna 200), pode mostrar status diferentes', async () => {
+       test('GET /perdidos/animais-perdidos, ao mostrar lista (retorna 200), pode mostrar status diferentes', async () => {
       await AnimalPerdidoEncontrado.create({
         nome: 'Rex',
         especie: 'Cachorro',
@@ -406,7 +423,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
         contato: '666',
         local: 'Ipiranga'
       });
-
+      
       const atualizacao = {
         status: 'Encontrado',
         local: 'Mooca'
@@ -414,7 +431,8 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
       const res = await request(app)
         .patch(`/perdidos/animais-perdidos/${animal._id}`)
-        .send(atualizacao);
+        .set('Authorization', `Bearer ${token}`)
+        .send({ status: 'Encontrado', local: 'Mooca' });
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('msg', 'Animal atualizado com sucesso!');
@@ -448,6 +466,7 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
 
       const res = await request(app)
         .put(`/perdidos/animais-perdidos/${animal._id}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(dadosNovos);
 
       expect(res.status).toBe(200);
@@ -461,36 +480,37 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
     describe('Atualização deve retornar erro quando:', () => {
 
       test('a) O animal parcialmente atualizado (PATCH) não existe (Retorna 404)', async () => {
-        const idInexistente = new mongoose.Types.ObjectId();
-        const atualizacao = { status: 'Encontrado' };
+        const id = new mongoose.Types.ObjectId();
 
         const res = await request(app)
-          .patch(`/perdidos/animais-perdidos/${idInexistente}`)
-          .send(atualizacao);
+          .patch(`/perdidos/animais-perdidos/${id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ status: 'Encontrado' });
 
         expect(res.status).toBe(404);
         expect(res.body).toHaveProperty('msg', 'Animal não encontrado para atualização');
       });
 
       test('b) O animal completamente atualizado (PUT) não existe (Retorna 404)', async () => {
-        const idInexistente = new mongoose.Types.ObjectId();
-        const dadosNovos = {
-          nome: 'Test',
-          especie: 'Gato',
-          idade: 2,
-          porte: 'Pequeno',
-          status: 'Perdido',
-          descricao: 'Teste',
-          contato: '999',
-          local: 'Teste'
-        };
+        const id = new mongoose.Types.ObjectId();
 
         const res = await request(app)
-          .put(`/perdidos/animais-perdidos/${idInexistente}`)
-          .send(dadosNovos);
+          .put(`/perdidos/animais-perdidos/${id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            nome: 'Test',
+            especie: 'Gato',
+            idade: 2,
+            porte: 'Pequeno',
+            status: 'Perdido',
+            descricao: 'Teste',
+            contato: '999',
+            local: 'Teste'
+          });
+          
 
         expect(res.status).toBe(404);
-        expect(res.body).toHaveProperty('msg', 'Animal não encontrado para substituição');
+         expect(res.body).toHaveProperty('msg', 'Animal não encontrado para substituição');
       });
 
       test('c) Os Dados do animal são inválidos (Retorna 400)', async () => {
@@ -504,18 +524,19 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
           contato: '000',
           local: 'Consolação'
         });
-
-        const atualizacaoInvalida = {
+         const atualizacaoInvalida = {
           status: 'Resgatado'
         };
 
         const res = await request(app)
           .patch(`/perdidos/animais-perdidos/${animal._id}`)
-          .send(atualizacaoInvalida);
+          .set('Authorization', `Bearer ${token}`)
+          .send({ status: 'Resgatado' });
 
         expect(res.status).toBe(400);
         expect(res.body).toHaveProperty('msg', 'Erro ao atualizar animal');
       });
+
     });
   });
 
@@ -533,34 +554,41 @@ describe('Testes de CRUD - Animais Perdidos/Encontrados', () => {
         local: 'Lapa'
       });
 
-      const res = await request(app).delete(`/perdidos/animais-perdidos/${animal._id}`);
+      const res = await request(app)
+        .delete(`/perdidos/animais-perdidos/${animal._id}`)
+        .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('msg', 'Animal removido com sucesso!');
 
-      const animalRemovido = await AnimalPerdidoEncontrado.findById(animal._id);
-      expect(animalRemovido).toBeNull();
+      const removido = await AnimalPerdidoEncontrado.findById(animal._id);
+      expect(removido).toBeNull();
     });
 
     describe('DELETE /perdidos/animais-perdidos/:id deve retornar erro quando:', () => {
 
       test('a) Animal a ser deletado não existe (Retorna 404)', async () => {
-        const idInexistente = new mongoose.Types.ObjectId();
+        const id = new mongoose.Types.ObjectId();
 
-        const res = await request(app).delete(`/perdidos/animais-perdidos/${idInexistente}`);
+        const res = await request(app)
+          .delete(`/perdidos/animais-perdidos/${id}`)
+          .set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(404);
         expect(res.body).toHaveProperty('msg', 'Animal não encontrado para exclusão');
       });
 
       test('b) ID inserido é inválido (Retorna 500)', async () => {
-        const idInvalido = 'abc123';
-
-        const res = await request(app).delete(`/perdidos/animais-perdidos/${idInvalido}`);
+        const res = await request(app)
+          .delete('/perdidos/animais-perdidos/abc123')
+          .set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(500);
         expect(res.body).toHaveProperty('msg', 'Erro ao deletar animal');
       });
+
     });
+
   });
+
 });

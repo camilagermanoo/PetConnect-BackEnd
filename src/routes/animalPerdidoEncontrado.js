@@ -1,18 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const animalPerdidoController = require('../controllers/animalPerdidoEncontradoController');
 
-router.post('/', animalPerdidoController.criarAnimal);
-
 router.get('/', animalPerdidoController.listarTodosAnimais);
-
 router.get('/:id', animalPerdidoController.buscarAnimalPorId);
 
-router.put('/:id', animalPerdidoController.substituirAnimal);
-
-router.patch('/:id', animalPerdidoController.atualizarAnimal);
-
-router.delete('/:id', animalPerdidoController.deletarAnimal);
+router.post('/', authMiddleware, animalPerdidoController.criarAnimal);
+router.put('/:id', authMiddleware, animalPerdidoController.substituirAnimal);
+router.patch('/:id', authMiddleware, animalPerdidoController.atualizarAnimal);
+router.delete('/:id', authMiddleware, animalPerdidoController.deletarAnimal);
 
 module.exports = router;
